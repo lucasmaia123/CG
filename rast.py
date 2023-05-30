@@ -12,15 +12,7 @@ class Raster():
         self.arestas = []
         self.faces = []
         self.modelo = []
-
-    # Normaliza as coordenadas de uma aresta
-    def normaliza(self, a):
-        for v in self.arestas[a]:
-            norma = sqrt(self.vertices[v][0]**2 + self.vertices[v][1]**2)
-            if norma != 0:
-                self.vertices[v][0] = self.vertices[v][0]/norma
-                self.vertices[v][1] = self.vertices[v][1]/norma
-
+        
     # Adiciona novo vertice na lista de vertices se este já não existir
     def adiciona_vertice(self, x, y):
         # Checa se as coordenadas do vertice cabem no espaço
@@ -356,7 +348,7 @@ if __name__ == '__main__':
     while True:
         print("1 - Adicionar Vertice\n2 - Adicionar Aresta\n3 - Adicionar face\n4 - Desenhar modelo\n"
               "5 - Alterar resolução\n6 - Resetar Modelo\n7 - Desenha retas aleatorias\n"
-              "8 - Desenha poligonos aleatórios\n9 - Desenha circulo\n10 - Normaliza aresta")
+              "8 - Desenha poligonos aleatórios\n9 - Desenha circulo\n)
         
         x = input("Selecione uma função: ")
         match x:
@@ -419,9 +411,5 @@ if __name__ == '__main__':
                 pos_x = int(input("Coord x: "))
                 pos_y = int(input("Coord y: "))
                 espaço.desenha_circulo(raio, pos_x, pos_y)
-            case '10':
-                espaço.enum_arestas()
-                ind = int(input("Aresta: "))
-                espaço.normaliza(ind)
             case _:
                 break
