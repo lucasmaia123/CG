@@ -13,6 +13,14 @@ class Raster():
         self.faces = []
         self.modelo = []
 
+    # Normaliza as coordenadas de uma aresta
+    def normaliza(self, a):
+        for v in self.arestas[a]:
+            norma = sqrt(self.vertices[v][0]**2 + self.vertices[v][1]**2)
+            if norma != 0:
+                self.vertices[v][0] = self.vertices[v][0]/norma
+                self.vertices[v][1] = self.vertices[v][1]/norma
+
     # Adiciona novo vertice na lista de vertices se este já não existir
     def adiciona_vertice(self, x, y):
         # Checa se as coordenadas do vertice cabem no espaço
@@ -69,6 +77,11 @@ class Raster():
         for i, j in enumerate(self.vertices):
             print(i, j)
 
+    def enum_arestas(self):
+        print("Arestas: ")
+        for i,j in enumerate(self.arestas):
+            print(i, j)
+
     # Altera a resolução do espaço e rearranja as coordenadas dos vertices de acordo com a mudança da resolução
     def altera_resolução(self, width, height):
         fatorx = width/self.width
@@ -120,12 +133,10 @@ class Raster():
     def produz_modelo_face(self, vertices):
         modelo = []
         for aresta in [[i,j] for i in vertices for j in vertices if j == i + 1 or (i == vertices[-1] and j == vertices[0])]:
-            x1 = int(self.vertices[aresta[0]][0])    # Posição x do vertice aresta[0]
-            y1 = int(self.vertices[aresta[0]][1])
-            x2 = int(self.vertices[aresta[1]][0])
-            y2 = int(self.vertices[aresta[1]][1])    # Posição y do vertice aresta[1]
-            # Inicia o modelo da reta a partir do ponto inicial
-            self.produz_fragmento(x1, y1, modelo)
+            x1 = self.vertices[aresta[0]][0]    # Posição x do vertice aresta[0]
+            y1 = self.vertices[aresta[0]][1]
+            x2 = self.vertices[aresta[1]][0]
+            y2 = self.vertices[aresta[1]][1]    # Posição y do vertice aresta[1]
             # Checa se dx não é 0
             if x2 - x1 != 0:
                 # Coeficiente angular da reta
@@ -139,26 +150,26 @@ class Raster():
                     x = xm
                     # Obtem o vertice com o menor valor de x e o percorre até o outro vertice
                     while x < xm + fabs(x2 - x1):
-                        x += 1
                         y = (m * x) + b
                         self.produz_fragmento(x, y, modelo)
+                        x += 1
                 # Se dy > dx, encontra x para cada valor de y
                 else:
                     ym = min(y1, y2)
                     y = ym
                     while y < ym + fabs(y2 - y1):
-                        y += 1
                         # Formula da reta adaptada para encontrar x
                         x = (y - b) / m
                         self.produz_fragmento(x, y, modelo)
+                        y += 1
             # Trata do caso da reta vertical (dx == 0)
             else:
                 ym = min(y1, y2)
                 y = ym
                 while y < ym + fabs(y2 - y1):
-                    y += 1
                     # Repete o valor de x enquanto percorre y
                     self.produz_fragmento(x1, y, modelo)
+                    y += 1
         return modelo
 
     # Carrega as arestas e as faces no modelo
@@ -166,12 +177,10 @@ class Raster():
         self.modelo = []
         # Coloca as arestas da lista de arestas no modelo
         for aresta in self.arestas:
-            x1 = int(self.vertices[aresta[0]][0])    # Posição x do vertice aresta[0]
-            y1 = int(self.vertices[aresta[0]][1])
-            x2 = int(self.vertices[aresta[1]][0])
-            y2 = int(self.vertices[aresta[1]][1])    # Posição y do vertice aresta[1]
-            # Inicia o modelo da reta a partir do ponto inicial
-            self.produz_fragmento(x1, y1, self.modelo)
+            x1 = self.vertices[aresta[0]][0]    # Posição x do vertice aresta[0]
+            y1 = self.vertices[aresta[0]][1]
+            x2 = self.vertices[aresta[1]][0]
+            y2 = self.vertices[aresta[1]][1]    # Posição y do vertice aresta[1]
             # Checa se dx não é 0
             if x2 - x1 != 0:
                 # Coeficiente angular da reta
@@ -184,27 +193,27 @@ class Raster():
                     xm = min(x1, x2)
                     x = xm
                     # Obtem o vertice com o menor valor de x e o percorre até o outro vertice
-                    while x < xm + fabs(x2 - x1):
-                        x += 1
+                    while x <= xm + fabs(x2 - x1):
                         y = (m * x) + b
                         self.produz_fragmento(x, y, self.modelo)
+                        x += 1
                 # Se dy > dx, encontra x para cada valor de y
                 else:
                     ym = min(y1, y2)
                     y = ym
-                    while y < ym + fabs(y2 - y1):
-                        y += 1
+                    while y <= ym + fabs(y2 - y1):
                         # Formula da reta adaptada para encontrar x
                         x = (y - b) / m
                         self.produz_fragmento(x, y, self.modelo)
+                        y += 1
             # Trata do caso da reta vertical (dx == 0)
             else:
                 ym = min(y1, y2)
                 y = ym
                 while y < ym + fabs(y2 - y1):
-                    y += 1
                     # Repete o valor de x enquanto percorre y
                     self.produz_fragmento(x1, y, self.modelo)
+                    y += 1
         # preenche as faces dos polígonos da lista de faces
         for face in self.faces:
             # Cria um espaço alternativo para cada face e preenche a face neste espaço
@@ -347,7 +356,7 @@ if __name__ == '__main__':
     while True:
         print("1 - Adicionar Vertice\n2 - Adicionar Aresta\n3 - Adicionar face\n4 - Desenhar modelo\n"
               "5 - Alterar resolução\n6 - Resetar Modelo\n7 - Desenha retas aleatorias\n"
-              "8 - Desenha poligonos aleatórios\n9 - Desenha circulo\n")
+              "8 - Desenha poligonos aleatórios\n9 - Desenha circulo\n10 - Normaliza aresta")
         
         x = input("Selecione uma função: ")
         match x:
@@ -410,5 +419,9 @@ if __name__ == '__main__':
                 pos_x = int(input("Coord x: "))
                 pos_y = int(input("Coord y: "))
                 espaço.desenha_circulo(raio, pos_x, pos_y)
+            case '10':
+                espaço.enum_arestas()
+                ind = int(input("Aresta: "))
+                espaço.normaliza(ind)
             case _:
                 break
